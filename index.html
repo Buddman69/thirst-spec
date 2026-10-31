@@ -161,6 +161,7 @@ td.us, th.us { background: color-mix(in srgb, var(--accent-soft) 55%, transparen
 .sgrid .hmp h4 { font-size: 12px; }
 .sgrid .hmp .rng { font: 500 11px/1 var(--mono); color: var(--muted); }
 @media (max-width: 720px) { .toc ol { columns: 1; } }
+.livedoc { margin-top: 36px; padding-top: 14px; border-top: 1px solid var(--line); color: var(--muted); font-size: 13px; max-width: 90ch; }
 .roadmap { list-style: none; margin: 0; padding: 0; display: grid; gap: 0; counter-reset: step; }
 .roadmap li { counter-increment: step; position: relative; padding: 0 0 22px 44px; break-inside: avoid; }
 .roadmap li::before { content: counter(step); position: absolute; left: 0; top: -2px; width: 28px; height: 28px;
@@ -170,6 +171,7 @@ td.us, th.us { background: color-mix(in srgb, var(--accent-soft) 55%, transparen
 .roadmap li:last-child { padding-bottom: 0; }
 .roadmap b { font: 600 16px/1.3 var(--display); }
 .roadmap p { margin-top: 4px; color: var(--muted); font-size: 14px; }
+@media print { .roadmap-sec { break-before: page; } }
 .matrix { min-width: 820px; }
 .matrix thead th { white-space: normal; }
 .matrix td.on { color: var(--ink); font-weight: 500; }
@@ -653,11 +655,11 @@ td.us, th.us { background: color-mix(in srgb, var(--accent-soft) 55%, transparen
     <div class="hmgrid sgrid" id="setupgrids"></div>
   </section>
 
-  <section>
+  <section class="roadmap-sec">
     <h2 id="roadmap">Roadmap</h2>
     <p>The order things happen in, from pre-orders to production.</p>
     <ol class="roadmap">
-      <li><b>Pre-orders open</b> <span class="tag">Very soon, likely week 1–2 of November</span><p>Under 20 boards. A 50% deposit of the $350 maximum price reserves a board.</p></li>
+      <li><b>Pre-orders open</b> <span class="tag">Very soon, likely week 1–2 of November</span><p>Pre-ordered boards make up the alpha program: the first prototypes open for public testing. They will be the first to test new features as they are rolled out, and alpha firmware will only be available on these initial prototype boards. Open beta software will follow at a later date.</p><p>The price depends on how many boards are pre-ordered. All prices are in US dollars. $350 is the maximum, for under 20 boards, and a 50% deposit ($175) reserves a board. At 20 to 49 boards our cost per board falls a lot, and our early, highest projection is $250 per board, including shipping within the USA and Australia. Shipping to other countries will probably cost about $15 more. The price drops again at 50 and at 100 boards.</p><p>When pre-orders close and we know how many boards are on order, we balance the final price, and you pay only the difference. For example, if 21 boards are pre-ordered and the price comes to $250, you have already paid $175, so the balance is $75. If you order more than one board, an extra discount is applied on top, automatically, when the final price is balanced.</p><p>These prices are a rough estimate: we have not yet gone through every cost of making the boards and having them delivered. Concrete prices will be published when pre-orders open.</p></li>
       <li><b>Test board order</b><p>The initial test boards are ordered. Initial runs take about 3–4 weeks, plus shipping.</p></li>
       <li><b>Design validation and basic firmware</b><p>The physical design is validated on real hardware, and a basic firmware build brings up comms with the dongle.</p></li>
       <li><b>Latency testing</b><p>Real input latency is measured with a high-speed, firmware-linked test device.</p></li>
@@ -724,6 +726,7 @@ td.us, th.us { background: color-mix(in srgb, var(--accent-soft) 55%, transparen
       <li>PS5 console play. This revision is PC-first; console support would need a future dongle</li>
     </ul>
   </div>
+  <p class="livedoc">This is a live document. It will be updated as the project moves forward, and all information and documentation in it is correct to the best of our knowledge at the time of writing.</p>
 </div>
 <script>
 (function (root) {
