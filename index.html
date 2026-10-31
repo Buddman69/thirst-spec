@@ -1,0 +1,932 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Thirst: 8 kHz wired and wireless replacement main board for the DualSense shell. Specifications, latency, battery life and roadmap.">
+<title>Thirst Specifications</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap">
+<style>
+:root {
+  --bg: #F3F5F9; --panel: #FFFFFF; --ink: #11141B; --muted: #596277; --line: #D8DDE7;
+  --accent: #2346E8; --accent-soft: #E4E9FF; --note: #8A5300; --draft: #B4233C;
+  --s1: #2346E8; --s2: #96500E; --s3: #17955C; --s4: #E99A1E;
+  --display: "Chakra Petch", "Segoe UI", system-ui, sans-serif;
+  --body: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #0E1117; --panel: #161B24; --ink: #E8ECF4; --muted: #9AA3B7; --line: #283041;
+  --accent: #86A0FF; --accent-soft: #1C2442; --note: #E6A955; --draft: #FF8095;
+  --s1: #6F8CF5; --s2: #9A5530; --s3: #209C62; --s4: #BE8A16; color-scheme: dark } }
+:root[data-theme="dark"] {
+  --bg: #0E1117; --panel: #161B24; --ink: #E8ECF4; --muted: #9AA3B7; --line: #283041;
+  --accent: #86A0FF; --accent-soft: #1C2442; --note: #E6A955; --draft: #FF8095;
+  --s1: #6F8CF5; --s2: #9A5530; --s3: #209C62; --s4: #BE8A16; color-scheme: dark }
+
+body { background: var(--bg); color: var(--ink); font: 15px/1.6 var(--body); }
+.wrap { max-width: 980px; margin: 0 auto; padding-block: 40px 64px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  display: grid; gap: 44px; }
+h1, h2, h3 { font-family: var(--display); text-wrap: balance; margin: 0; line-height: 1.15; }
+h1 { font-size: clamp(30px, 6vw, 46px); font-weight: 700; letter-spacing: -0.01em; }
+h2 { font-size: 22px; font-weight: 600; }
+h3 { font-size: 15px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--accent); }
+p { margin: 0; max-width: 68ch; }
+.eyebrow { font: 500 12px/1 var(--mono); letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); }
+header { display: grid; gap: 12px; }
+.lede { color: var(--muted); font-size: 17px; }
+.tagline { font: 600 clamp(17px, 2.6vw, 22px)/1.2 var(--display); color: var(--accent); margin-top: -4px; }
+.status { display: inline-block; justify-self: start; font: 500 12px/1.4 var(--mono); color: var(--note);
+  border: 1px solid currentColor; border-radius: 3px; padding: 6px 8px; letter-spacing: 0.04em; }
+.draftbar { font: 500 12px/1.4 var(--mono); letter-spacing: 0.08em; text-transform: uppercase; color: var(--draft);
+  border: 1px dashed currentColor; border-radius: 3px; padding: 8px 10px; justify-self: start; }
+
+.tiles { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 1px; background: var(--line);
+  border: 1px solid var(--line); border-radius: 6px; overflow: hidden; }
+.tile { background: var(--panel); padding: 18px 18px 16px; display: grid; gap: 4px; align-content: start; }
+.tile b { font: 700 clamp(26px, 4.4vw, 38px)/1 var(--display); font-variant-numeric: tabular-nums; }
+.tile b small { font-size: 0.5em; font-weight: 600; margin-left: 3px; color: var(--muted); }
+.tile span { font-size: 13px; color: var(--muted); }
+@media (max-width: 720px) { .tiles { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+
+section { display: grid; gap: 16px; }
+.tablewrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 6px; background: var(--panel); }
+table { border-collapse: collapse; width: 100%; min-width: 620px; font-variant-numeric: tabular-nums; }
+th, td { text-align: left; vertical-align: top; padding: 11px 14px; border-bottom: 1px solid var(--line); }
+tr:last-child td, tr:last-child th { border-bottom: 0; }
+thead th { font: 600 12px/1.3 var(--mono); letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted);
+  background: var(--accent-soft); }
+tbody th { font-weight: 600; white-space: nowrap; }
+td .sub { display: block; font-size: 13px; color: var(--muted); }
+.num { font: 500 15px/1.4 var(--mono); }
+.fine { font-size: 13px; color: var(--muted); max-width: 90ch; }
+.wide { min-width: 860px; }
+.wide tbody th { white-space: normal; min-width: 130px; }
+td.us, th.us { background: color-mix(in srgb, var(--accent-soft) 55%, transparent); }
+
+.bat td, .fresh td { white-space: nowrap; }
+.chart { position: relative; background: var(--panel); border: 1px solid var(--line); border-radius: 6px;
+  padding: 18px 20px 14px; display: grid; gap: 16px; }
+.legend { display: flex; flex-wrap: wrap; gap: 8px 20px; font-size: 13px; color: var(--muted); }
+.legend span { display: inline-flex; align-items: center; gap: 8px; }
+.sw { width: 12px; height: 12px; border-radius: 3px; display: inline-block; }
+.s1 { background: var(--s1); } .s2 { background: var(--s2); } .s3 { background: var(--s3); } .s4 { background: var(--s4); }
+.groups { display: grid; gap: 14px; }
+.gh { font: 600 12px/1.3 var(--mono); letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted);
+  border-top: 1px solid var(--line); padding-top: 12px; margin-top: 4px; }
+.gh:first-child { border-top: 0; padding-top: 0; margin-top: 0; }
+.grp { display: grid; gap: 4px; min-width: 0; }
+.glabel { font-size: 14px; font-weight: 500; color: var(--ink); }
+.glabel em { font-style: normal; color: var(--muted); font-weight: 400; }
+.brow { display: grid; grid-template-columns: minmax(0, 1fr) 104px; align-items: center; gap: 10px;
+  padding: 3px 0; border-radius: 3px; outline: none; cursor: default; }
+.brow:focus-visible { box-shadow: 0 0 0 2px var(--accent); }
+.track { display: block; height: 12px; position: relative;
+  background-image: linear-gradient(to right, var(--line) 1px, transparent 1px);
+  background-size: 33.333% 100%; }
+.track b { position: absolute; left: 0; top: 0; display: block; height: 100%; min-width: 3px; border-radius: 0 4px 4px 0; }
+.track b.off, .sw.off { opacity: 0.32; }
+.legend .sw + .sw { margin-left: -6px; }
+.val small { font-size: 12px; color: var(--muted); }
+.brow:hover .track b, .brow:focus .track b { filter: brightness(1.12); }
+.val { font: 500 14px/1 var(--mono); color: var(--ink); font-variant-numeric: tabular-nums; }
+.axis { display: grid; grid-template-columns: repeat(3, 1fr) 0; margin-right: 114px; font: 500 11px/1 var(--mono);
+  color: var(--muted); border-top: 1px solid var(--line); padding-top: 6px; }
+.axis span:last-child { white-space: nowrap; transform: translateX(-100%); }
+.tip { position: absolute; z-index: 2; background: var(--ink); color: var(--panel); font: 500 12px/1.3 var(--mono);
+  padding: 6px 8px; border-radius: 4px; pointer-events: none; white-space: nowrap; }
+.astable summary { cursor: pointer; font-size: 13px; color: var(--accent); }
+.astable[open] summary { margin-bottom: 10px; }
+.defs { display: grid; grid-template-columns: minmax(0, 1fr); gap: 16px; }
+.defs .tablewrap { min-width: 0; }
+.deft { min-width: 0; font-size: 14px; }
+.deft td { white-space: normal; }
+@media (max-width: 860px) { .defs { grid-template-columns: minmax(0, 1fr); } }
+.alltab { min-width: 860px; }
+.alltab thead th { text-align: center; }
+.alltab thead tr:first-child th:first-child { text-align: left; vertical-align: bottom; }
+.alltab tbody th { white-space: normal; font-weight: 500; }
+.alltab tr.tgh th { font: 600 11px/1.3 var(--mono); letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted);
+  background: var(--bg); }
+.calc { background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 18px 20px; display: grid; gap: 18px; }
+.controls { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px 16px; }
+@media (max-width: 720px) { .controls { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.controls label { display: grid; gap: 4px; font-size: 13px; color: var(--muted); min-width: 0; }
+.controls select { font: 500 15px/1.2 var(--body); color: var(--ink); background: var(--bg); border: 1px solid var(--line);
+  border-radius: 4px; padding: 7px 8px; min-width: 0; }
+.controls select:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+.results { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1px; background: var(--line);
+  border: 1px solid var(--line); border-radius: 6px; overflow: hidden; }
+.res { background: var(--panel); padding: 14px 16px; display: grid; gap: 2px; }
+.res .rl { font-size: 13px; color: var(--muted); }
+.res b { font: 700 clamp(28px, 5vw, 36px)/1.1 var(--display); font-variant-numeric: tabular-nums; }
+.res .rs { font-size: 13px; color: var(--muted); }
+.split { display: grid; gap: 8px; }
+.splitbar { display: flex; height: 12px; border-radius: 4px; overflow: hidden; gap: 2px; background: var(--bg); }
+.splitbar i { display: block; height: 100%; min-width: 2px; }
+.splitkey { display: flex; flex-wrap: wrap; gap: 6px 18px; font-size: 13px; color: var(--muted); }
+.splitkey span { display: inline-flex; align-items: center; gap: 6px; }
+.k1 { background: var(--muted); } .k2 { background: var(--s1); } .k3 { background: var(--s2); } .k4 { background: var(--note); }
+.hmbar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px 16px; }
+.seg { display: inline-flex; border: 1px solid var(--line); border-radius: 6px; overflow: hidden; }
+.seg button { font: 500 13px/1 var(--body); color: var(--muted); background: var(--panel); border: 0; padding: 9px 12px; cursor: pointer; }
+.seg button + button { border-left: 1px solid var(--line); }
+.seg button[aria-pressed="true"] { color: var(--ink); background: var(--accent-soft); }
+.seg button:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
+.hmscale { display: inline-flex; align-items: center; gap: 8px; font: 500 12px/1 var(--mono); color: var(--muted); }
+.hmscale i { width: 120px; height: 10px; border-radius: 3px;
+  background: linear-gradient(to right, color-mix(in oklab, var(--s1) 12%, var(--panel)), var(--s1)); }
+.hmgrid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; }
+@media (max-width: 860px) { .hmgrid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 440px) { .hmgrid { grid-template-columns: minmax(0, 1fr); } }
+.hmp { background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 10px; display: grid; gap: 6px; min-width: 0; }
+.hmp h4 { margin: 0; font: 600 13px/1.2 var(--display); }
+.hmt { display: grid; grid-template-columns: 52px repeat(4, minmax(0, 1fr)); gap: 2px; font: 500 12px/1 var(--mono); }
+.hmt .hd { color: var(--muted); font-size: 10px; text-align: center; padding: 4px 0; overflow: hidden; text-overflow: ellipsis; }
+.hmt .rh { color: var(--muted); font-size: 10px; display: flex; align-items: center; }
+.hmt .c { text-align: center; padding: 9px 0; border-radius: 3px; font-variant-numeric: tabular-nums; }
+.hmt .corner { font-size: 9px; color: var(--muted); display: flex; align-items: end; line-height: 1.1; }
+.cgroup { display: grid; gap: 14px; }
+.cgroup + .cgroup { border-top: 1px solid var(--line); padding-top: 14px; }
+.cgroup .gh { border-top: 0; padding-top: 0; margin-top: 0; }
+.toc { display: grid; gap: 10px; }
+.toc ol { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; columns: 2; column-gap: 36px; }
+.toc li { display: flex; gap: 8px; align-items: baseline; padding: 4px 0; border-bottom: 1px dotted var(--line); break-inside: avoid; }
+.toc li.sub { padding-left: 16px; font-size: 14px; }
+.toc a { color: var(--ink); text-decoration: none; flex: 1; }
+.toc a:hover, .toc a:focus-visible { color: var(--accent); }
+.toc .pg { font: 500 13px/1 var(--mono); color: var(--muted); }
+.glegend { display: none; }
+.sgrid .hmp h4 { font-size: 12px; }
+.sgrid .hmp .rng { font: 500 11px/1 var(--mono); color: var(--muted); }
+@media (max-width: 720px) { .toc ol { columns: 1; } }
+.roadmap { list-style: none; margin: 0; padding: 0; display: grid; gap: 0; counter-reset: step; }
+.roadmap li { counter-increment: step; position: relative; padding: 0 0 22px 44px; break-inside: avoid; }
+.roadmap li::before { content: counter(step); position: absolute; left: 0; top: -2px; width: 28px; height: 28px;
+  border-radius: 50%; background: var(--accent); color: var(--panel); font: 600 14px/28px var(--display); text-align: center; }
+.roadmap li::after { content: ""; position: absolute; left: 13px; top: 30px; bottom: 4px; width: 2px; background: var(--line); }
+.roadmap li:last-child::after { display: none; }
+.roadmap li:last-child { padding-bottom: 0; }
+.roadmap b { font: 600 16px/1.3 var(--display); }
+.roadmap p { margin-top: 4px; color: var(--muted); font-size: 14px; }
+.matrix { min-width: 820px; }
+.matrix thead th { white-space: normal; }
+.matrix td.on { color: var(--ink); font-weight: 500; }
+.matrix td.off { color: var(--muted); }
+.fresh .bar .num { min-width: 92px; }
+.fresh tr.ours th, .fresh tr.ours .num { color: var(--accent); }
+.fresh tr:not(.ours) .bar i { background: var(--muted); }
+.bar { display: flex; align-items: center; gap: 10px; }
+.bar i { display: block; height: 8px; border-radius: 2px; background: var(--accent); min-width: 2px; }
+.bar .num { min-width: 52px; }
+
+.caps { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1px; background: var(--line);
+  border: 1px solid var(--line); border-radius: 6px; overflow: hidden; }
+.cap { background: var(--panel); padding: 18px 20px; display: grid; gap: 6px; align-content: start; min-width: 0; }
+.cap b { font: 600 16px/1.3 var(--display); }
+.cap p { font-size: 14px; color: var(--muted); }
+@media (max-width: 720px) { .caps { grid-template-columns: minmax(0, 1fr); } }
+
+.callout { border-left: 3px solid var(--accent); background: var(--panel); padding: 14px 18px; display: grid; gap: 6px;
+  border-radius: 0 6px 6px 0; }
+.callout b { font: 600 16px/1.3 var(--display); }
+.callout p { font-size: 14px; color: var(--muted); }
+
+.features { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 28px 40px; }
+@media (max-width: 720px) { .features { grid-template-columns: minmax(0, 1fr); } }
+.group { display: grid; gap: 10px; align-content: start; min-width: 0; }
+.group ul { margin: 0; padding: 0; list-style: none; display: grid; gap: 9px; }
+.group li { padding-left: 16px; position: relative; }
+.group li::before { content: ""; position: absolute; left: 0; top: 0.62em; width: 6px; height: 6px; background: var(--accent); }
+.group li b { font-weight: 600; }
+.tag { font: 500 11px/1 var(--mono); letter-spacing: 0.06em; text-transform: uppercase; color: var(--note);
+  border: 1px solid currentColor; border-radius: 3px; padding: 2px 5px; margin-left: 4px; vertical-align: 1px; white-space: nowrap; }
+
+.not { border-top: 1px solid var(--line); padding-top: 20px; display: grid; gap: 10px; }
+.not ul { margin: 0; padding-left: 18px; color: var(--muted); display: grid; gap: 6px; }
+.pdflink { margin-top: 10px; font-size: 14px; }
+.pdflink a { color: var(--accent); }
+</style>
+
+<div class="wrap">
+  <header>
+    <span class="eyebrow">Replacement main board · fits the DualSense shell</span>
+    <h1>Thirst</h1>
+    <p class="tagline">8 kHz wired &amp; wireless controller</p>
+    <p class="pdflink"><a href="Thirst_Spec_Sheet.pdf">Printable PDF version</a></p>
+    <p class="lede">Most high-speed controllers get their speed by cutting something. Some swap adaptive triggers and HD haptics for basic rumble motors. Some read sticks and triggers at 8 bits, which is 256 steps from rest to full tilt. Some advertise 8,000 Hz but only check your buttons 1,000 times a second, then wait a few milliseconds to confirm each press. Others drop the touchpad or motion controls, or go wireless at Bluetooth speeds.</p>
+    <p class="lede">Thirst doesn't make that trade. It keeps the adaptive triggers, HD haptics, touchpad, motion controls and lights, adds eight extra buttons, and runs at 8,000 Hz wired and wireless. Sticks and triggers are read at 16 bits, 65,536 steps, and every report carries a brand-new reading taken just before your PC collects it. Two inner layers of solid copper shield the sensitive circuits from the radio, motors and haptics.</p>
+    <p class="lede">It is also a specialised low-power design. Every feature can be switched off when you don't need it. Turn off rumble, the adaptive triggers and the lights, and it runs for 50+ hours on a stock DualSense battery, even at 8,000 Hz over the dongle with motion controls still on.</p>
+    <span class="status">PROTOTYPE · figures are design targets and estimates, to be confirmed on hardware</span>
+  </header>
+
+  <div class="tiles">
+    <div class="tile"><b>8,000<small>Hz</small></b><span>Wired polling rate</span></div>
+    <div class="tile"><b>8,000<small>Hz</small></b><span>Wireless polling rate, with the dongle</span></div>
+    <div class="tile"><b>16<small>-bit</small></b><span>Sticks and triggers (stock: 8-bit)</span></div>
+    <div class="tile"><b>0<small>ms</small></b><span>Debounce delay on button press</span></div>
+  </div>
+
+  <nav class="toc" aria-label="Contents">
+    <h2>Contents</h2>
+    <ol>
+      <li><a href="#connection">Connection modes</a><span class="pg" data-for="connection"></span></li>
+      <li><a href="#latency">Latency: press to PC</a><span class="pg" data-for="latency"></span></li>
+      <li><a href="#freshness-why">Report rate isn't freshness</a><span class="pg" data-for="freshness-why"></span></li>
+      <li><a href="#freshness">Data freshness</a><span class="pg" data-for="freshness"></span></li>
+      <li><a href="#head-to-head">Head to head: custom 8 kHz boards</a><span class="pg" data-for="head-to-head"></span></li>
+      <li><a href="#signal">Measurement and signal quality</a><span class="pg" data-for="signal"></span></li>
+      <li><a href="#battery">Battery life</a><span class="pg" data-for="battery"></span></li>
+      <li><a href="#calculator">Battery calculator</a><span class="pg" data-for="calculator"></span></li>
+      <li class="sub"><a href="#light-cost">What each light costs</a><span class="pg" data-for="light-cost"></span></li>
+      <li class="sub"><a href="#light-combos">Adding the touchpad LEDs and mic mute light</a><span class="pg" data-for="light-combos"></span></li>
+      <li class="sub"><a href="#setup-grids">Touchpad LEDs and mic light in every setup</a><span class="pg" data-for="setup-grids"></span></li>
+      <li><a href="#roadmap">Roadmap</a><span class="pg" data-for="roadmap"></span></li>
+      <li><a href="#features">Features</a><span class="pg" data-for="features"></span></li>
+      <li><a href="#not-included">Not in this revision</a><span class="pg" data-for="not-included"></span></li>
+    </ol>
+  </nav>
+
+  <section>
+    <h2 id="connection">Connection modes</h2>
+    <div class="tablewrap"><table>
+      <thead><tr><th></th><th>Wired</th><th>2.4 GHz dongle</th><th>Bluetooth</th></tr></thead>
+      <tbody>
+        <tr><th>Link</th>
+          <td>USB-C, USB 2.0 High-Speed<span class="sub">480 Mbit/s</span></td>
+          <td>Proprietary 2.4 GHz<span class="sub">4 Mbit/s air rate</span></td>
+          <td>Bluetooth Low Energy<span class="sub">2 Mbit/s air rate</span></td></tr>
+        <tr><th>Report rate</th>
+          <td class="num">8,000 Hz</td>
+          <td class="num">8,000 Hz<span class="sub">The radio link runs 9,000 slots a second: 8,000 carry your input and 1,000 carry rumble, haptics and settings back to the controller. A dropped packet costs at most one report, because the next one always carries the latest input</span></td>
+          <td class="num">~65–133 Hz<span class="sub">Set by the host device (PC, Android, other). 133 Hz is the fastest any current host allows</span></td></tr>
+        <tr><th>Latency, press to PC</th>
+          <td class="num">0.07 ms<span class="sub">From the moment the button closes to the input arriving at your PC</span></td>
+          <td class="num">as low as 0.13 ms<span class="sub">The whole chain, button to PC, not just the gap between reports. 0.17 ms with every feature on</span></td>
+          <td class="num">~4.5 ms<span class="sub">Set mostly by the host's Bluetooth interval</span></td></tr>
+        <tr><th>Motion (gyro) rate</th>
+          <td class="num">up to ~7,680 Hz<span class="sub">limited by the sensor</span></td>
+          <td class="num">4,000 Hz<span class="sub">gyro and accelerometer sampled together</span></td>
+          <td class="num">~65–133 Hz<span class="sub">same as the report rate</span></td></tr>
+        <tr><th>Input data stream</th>
+          <td class="num">~4.1 Mbit/s</td>
+          <td class="num">~1.4 Mbit/s up<span class="sub">~0.2 Mbit/s down for rumble, haptics and settings</span></td>
+          <td class="num">up to ~70 kbit/s</td></tr>
+        <tr><th>Timing</th>
+          <td><b>Frame Sniping</b><span class="sub">Tracks your PC's polling in real time, so every sample is taken just before the PC collects it</span></td>
+          <td><b>Frame Sniping</b><span class="sub">Tracks polling through the dongle the same way, across the wireless hop</span></td>
+          <td><b>Frame Sniping</b><span class="sub">Plus the host's Bluetooth interval. For convenience, not competition</span></td></tr>
+        <tr><th>Charging</th>
+          <td>Yes, while playing</td><td colspan="2">Battery, or from a dock or wireless-charging input</td></tr>
+      </tbody>
+    </table></div>
+  </section>
+
+  <section>
+    <h2 id="latency">Latency: press to PC</h2>
+    <p><b>Latency</b> is how long after you press a button or move a stick the PC has it. It includes everything the controller does along the way: scanning, confirming the press, processing, and the radio hop when wireless. Polling rate alone tells you none of this. Many controllers report at 8,000 Hz and still take milliseconds to confirm a button press. This one doesn't wait.</p>
+    <div class="tablewrap"><table class="fresh">
+      <thead><tr><th>Controller and mode</th><th>Buttons</th><th>Sticks</th><th>Wireless</th><th>Source</th></tr></thead>
+      <tbody>
+        <tr class="ours"><th>Thirst · wired</th><td class="num">0.07 ms</td><td class="num">0.07 ms</td><td>Yes</td><td>On-controller, calculated</td></tr>
+        <tr class="ours"><th>Thirst · 2.4 GHz dongle</th><td class="num">0.13–0.17 ms</td><td class="num">0.13–0.17 ms</td><td>Yes</td><td>On-controller, calculated</td></tr>
+        <tr class="ours"><th>Thirst · Bluetooth (PC)</th><td class="num">~4.5 ms</td><td class="num">~4.5 ms</td><td>Yes</td><td>On-controller, calculated</td></tr>
+        <tr><th>Marius Heier MH4 board · wired, 8 kHz</th><td class="num">0.96 ms</td><td class="num">0.51 ms</td><td>No</td><td>Gamepadla</td></tr>
+        <tr><th>Hyperstrike DS4 · wired, 8 kHz</th><td class="num">1.05 ms</td><td class="num">0.35 ms</td><td>No</td><td>Gamepadla, user-submitted</td></tr>
+        <tr><th>EasySMX Dune 8K · wired</th><td class="num">1.52 ms</td><td class="num">5.93 ms</td><td>Yes</td><td>Gamepadla</td></tr>
+        <tr><th>Void FireBird · wired, 1 kHz</th><td class="num">1.97 ms</td><td class="num">3.06 ms</td><td>No</td><td>Gamepadla, user-submitted</td></tr>
+        <tr><th>EasySMX Dune 8K · dongle</th><td class="num">2.18 ms</td><td class="num">8.22 ms</td><td>Yes</td><td>Gamepadla</td></tr>
+        <tr><th>ZD Super Legend 8K · wired, 8 kHz</th><td class="num">2.53 ms</td><td class="num">0.57 ms</td><td>Yes</td><td>Gamepadla</td></tr>
+        <tr><th>Xbox Series controller · wired</th><td class="num">6.5 ms</td><td class="num">8.3 ms</td><td>Yes</td><td>Gamepadla</td></tr>
+        <tr><th>Xbox Series controller · dongle</th><td class="num">7.2 ms</td><td class="num">8.9 ms</td><td>Yes</td><td>Gamepadla</td></tr>
+        <tr><th>DualSense · wired</th><td class="num">7.8 ms</td><td class="num">12.6 ms</td><td>Yes</td><td>Gamepadla</td></tr>
+        <tr><th>DualSense · Bluetooth</th><td class="num">9.0 ms</td><td class="num">13.6 ms</td><td>Yes</td><td>Gamepadla</td></tr>
+      </tbody>
+    </table></div>
+    <p class="fine">Average press-to-PC latency. Our figures are the controller's own time, from the button closing until the report reaches the PC's USB port, calculated from the design; with in-frame averaging switched on, stick readings add up to about 0.03 ms. Rows marked Gamepadla come from Gamepadla's Prometheus 82 hardware tester via gamepadla.com, which physically actuates the controller and also includes the tester's and Windows' own delays; Gamepadla states its tester's error margin as ±1 ms. Measured the same way, Thirst is expected to read about 0.15–0.4 ms. User-submitted results have not been checked by Gamepadla's moderators. Prototype measurements will be published alongside.</p>
+    <div class="callout">
+      <b>Measured, not just calculated</b>
+      <p>We test the full pipeline, from the instant a button closes to the moment the input arrives at your PC, not just the gap between reports. A custom tester presses the controller electrically on a precise schedule and timestamps every stage along the way, to a precision current latency testers don't reach. It also records internal timing that ordinary testers can't see. Our goal is simple: the lowest true press-to-PC latency of any controller.</p>
+    </div>
+  </section>
+
+  <section>
+    <h2 id="freshness-why">Report rate isn't freshness</h2>
+    <p>Two controllers can both say 8,000 Hz and deliver very different data. Many scan their buttons and sticks only 1,000 times a second, then send the same reading in eight reports in a row. Their data can be a full millisecond old, even though it arrives 8,000 times a second. Others send 8,000 reports on their own clock, which slowly drifts against your PC's. A report can sit waiting for the PC to ask for it, and every so often two land at once and one is lost, or none arrives and the last one repeats.</p>
+    <p>Thirst stays in step with your PC. Every input, every button, stick and trigger, is captured in time with your PC's own collection timing, so each report carries the newest reading the controller could have sent. Never a repeat, never a gap.</p>
+    <div class="tablewrap"><table>
+      <thead><tr><th>How the controller works</th><th>Reports per second</th><th>Age of the reading when your PC collects it</th></tr></thead>
+      <tbody>
+        <tr><th>Inputs scanned 1,000 times a second, sent in 8,000 reports</th><td class="num">8,000</td><td>~0.5 ms average, up to 1 ms<span class="sub">7 in 8 reports repeat the last reading</span></td></tr>
+        <tr><th>Sends 8,000 reports on its own clock</th><td class="num">8,000</td><td>~0.06 ms average, up to 0.125 ms<span class="sub">Drifts against your PC, so reports are sometimes doubled or missed</span></td></tr>
+        <tr><th>Thirst</th><td class="num">8,000</td><td><b>A few hundredths of a millisecond, every report</b><span class="sub">Taken just before your PC collects it</span></td></tr>
+      </tbody>
+    </table></div>
+    <p class="fine">Figures for other designs are typical for each approach and vary by model.</p>
+  </section>
+
+  <section>
+    <h2 id="freshness">Data freshness</h2>
+    <p>How old the newest stick or button reading is when the game reads it, from the moment it is sampled. Games read at their own times, so this is averaged over when the read happens. The game, Windows and the display add the same delay whichever controller you use, so they are left out.</p>
+    <div class="tablewrap"><table class="fresh">
+      <thead><tr><th>Controller and mode</th><th>Average</th><th>Worst case</th><th>Button debounce on top</th></tr></thead>
+      <tbody>
+        <tr class="ours"><th>Thirst · wired</th>
+          <td><div class="bar"><span class="num">0.07 ms</span><i style="width:0.7%"></i></div></td><td class="num">0.14 ms</td><td class="num">0 ms</td></tr>
+        <tr class="ours"><th>Thirst · 2.4 GHz dongle</th>
+          <td><div class="bar"><span class="num">0.13–0.17 ms</span><i style="width:1.7%"></i></div></td><td class="num">0.25–0.3 ms</td><td class="num">0 ms</td></tr>
+        <tr class="ours"><th>Thirst · Bluetooth (PC)</th>
+          <td><div class="bar"><span class="num">~4.5 ms</span><i style="width:45%"></i></div></td><td class="num">~9 ms</td><td class="num">0 ms</td></tr>
+        <tr><th>Typical "8 kHz" pro controller</th>
+          <td><div class="bar"><span class="num">~0.5–1 ms</span><i style="width:7.5%"></i></div></td><td class="num">~1–2 ms</td><td class="num">1–5 ms</td></tr>
+        <tr><th>Typical 1 kHz pro controller</th>
+          <td><div class="bar"><span class="num">~1 ms</span><i style="width:10%"></i></div></td><td class="num">~2 ms</td><td class="num">1–5 ms</td></tr>
+        <tr><th>Typical console controller on PC, wired</th>
+          <td><div class="bar"><span class="num">~2–4 ms</span><i style="width:30%"></i></div></td><td class="num">~5–8 ms</td><td class="num">1–5 ms</td></tr>
+        <tr><th>Typical Bluetooth controller</th>
+          <td><div class="bar"><span class="num">~5–10 ms</span><i style="width:75%"></i></div></td><td class="num">~10–20 ms</td><td class="num">1–5 ms</td></tr>
+      </tbody>
+    </table></div>
+    <p class="fine">Bars show the average on a 0–10 ms scale. Figures for other controllers are typical estimates for each class and vary by model. Thirst reports a press on its first edge.</p>
+  </section>
+
+  <section>
+    <h2 id="head-to-head">Head to head: custom 8 kHz boards</h2>
+    <div class="tablewrap"><table class="wide">
+      <thead><tr><th></th><th class="us">Thirst</th><th>Marius Heier MH4 / MH5</th><th>Hyperstrike DS4</th><th>Void FireBird</th></tr></thead>
+      <tbody>
+        <tr><th>Shell</th><td class="us">DualSense</td><td>MH4: DualShock 4. MH5: DualSense</td><td>DualShock 4</td><td>DualShock 4</td></tr>
+        <tr><th>Polling</th><td class="us">8 kHz wired and wireless</td><td>8 kHz, wired only</td><td>8 kHz, wired only</td><td>1 kHz, wired only</td></tr>
+        <tr><th>Button latency, Gamepadla-style</th><td class="us num">~0.15–0.4 ms*</td><td class="num">0.96 ms (MH4)</td><td class="num">1.05 ms†</td><td class="num">1.97 ms†</td></tr>
+        <tr><th>Stick latency, Gamepadla-style</th><td class="us num">~0.15–0.4 ms*</td><td class="num">0.51 ms (MH4)</td><td class="num">0.35 ms†</td><td class="num">3.06 ms†</td></tr>
+        <tr><th>Controller timing</th><td class="us">0.07 ms average, 0.14 ms worst, <b>including</b> all on-chip and peripheral processing</td><td>0.125 ms, <b>excluding</b> on-chip and peripheral processing (community tests)</td><td>Not published</td><td>Not published</td></tr>
+        <tr><th>Stick reading</th><td class="us">Dedicated 16-bit converter outside the processor, in-frame averaging, locked reference</td><td>Processor's built-in 12-bit converter</td><td>Not published</td><td>Not published</td></tr>
+        <tr><th>Wireless</th><td class="us">8 kHz dongle + Bluetooth</td><td>None</td><td>None</td><td>None</td></tr>
+        <tr><th>Battery life</th><td class="us">~13 h with light rumble and triggers, ~6 h medium, ~81 h with them off, lights off (8 kHz dongle); up to ~145 h on Bluetooth</td><td>None, wired only</td><td>Not published; tested wired only</td><td>No battery (unverified)</td></tr>
+        <tr><th>Gyro</th><td class="us">6-axis</td><td>None</td><td>Not published</td><td>Yes (unverified)</td></tr>
+        <tr><th>Rumble</th><td class="us">HD haptics</td><td>None</td><td>Not published</td><td>None</td></tr>
+        <tr><th>Adaptive triggers</th><td class="us">Yes, with position sensing</td><td>None</td><td>None</td><td>None</td></tr>
+        <tr><th>Touchpad</th><td class="us">Full multi-touch + click, with player LEDs</td><td>Click only, no touch sensing</td><td>Not published</td><td>Not published</td></tr>
+        <tr><th>Extra buttons</th><td class="us">8, plus separate digital trigger inputs</td><td>Up to 6</td><td>Not published</td><td>2 paddles</td></tr>
+        <tr><th>Console</th><td class="us">No, PC-first</td><td>No</td><td>No</td><td>PS4 listed (unverified)</td></tr>
+      </tbody>
+    </table></div>
+    <p class="fine">* Calculated from the design, including a typical Windows delay, so it compares with Gamepadla's measurements; to be replaced with measured results. † User-submitted on Gamepadla, not checked by its moderators. Marius latency is the MH4 (DualShock 4) board, the only one Gamepadla has tested; its features column describes the MH5, the DualSense version. The MH4 is one of the fastest wired boards Gamepadla has tested, and it gets there by leaving out wireless, the battery, gyro and rumble. Sources: Gamepadla (Prometheus 82 hardware tests on gamepadla.com) and the makers' and resellers' published listings. Our figures are calculated from the design.</p>
+  </section>
+
+  <section>
+    <h2 id="signal">Measurement and signal quality</h2>
+    <div class="caps">
+      <div class="cap"><b>In-frame averaging</b><p>Sticks and triggers are sampled 384,000 times a second, and each reading is averaged inside a single 8,000 Hz report cycle, before it reaches the processor. Every report carries a new, true 16-bit reading: never repeated, never upscaled, with no extra processor load, leaving its full attention for timing and the radio. Other controllers average across several reports, so their readings are already old when they're sent. Thirst's are a fraction of a report old, measured from the moment of sampling.</p></div>
+      <div class="cap"><b>Locked-reference sensing</b><p>Stick and trigger readings don't shift with battery level, with switching between battery, USB and dock power, with different ports and cables, or with the load from rumble and the adaptive triggers. Centre and full travel stay where they were calibrated, so your deadzones and curves feel the same in hour one and hour ten.</p></div>
+      <div class="cap"><b>Digital from the start</b><p>Sticks and triggers are converted to digital on their own dedicated converter, outside the processor, so the processor's electrical noise is kept out of the reading.</p></div>
+      <div class="cap"><b>Built for stability</b><p>Precision, low-drift components are used throughout the measurement and timing circuits, so readings and wireless timing hold steady across temperature and from unit to unit.</p></div>
+    </div>
+    <div class="tablewrap"><table>
+      <thead><tr><th>Input</th><th>Resolution</th><th>Path to the processor</th></tr></thead>
+      <tbody>
+        <tr><th>Thumbsticks</th>
+          <td>16-bit sampling<span class="sub">14–16 effective bits, depending on the averaging you choose</span></td>
+          <td>Dedicated analog converter sampling 384,000 times a second, averaged inside every report cycle. Each stick axis is buffered, so one axis never disturbs another</td></tr>
+        <tr><th>Analog triggers</th>
+          <td>16-bit sampling<span class="sub">~15 effective bits</span></td>
+          <td>Same converter as the sticks, plus a separate digital click at the end of travel</td></tr>
+        <tr><th>Gyro + accelerometer</th>
+          <td>16-bit, 6-axis<span class="sub">up to ±4,000 °/s and ±16 g</span></td>
+          <td>Own dedicated bus, read on its data-ready signal</td></tr>
+        <tr><th>Adaptive trigger position</th>
+          <td>12-bit</td>
+          <td>Measured directly, so trigger resistance is controlled in a closed loop</td></tr>
+        <tr><th>Buttons</th>
+          <td>Digital</td>
+          <td>Every button has its own processor pin, read directly with no scanning chips in between</td></tr>
+        <tr><th>Touchpad</th>
+          <td>Multi-touch + click</td>
+          <td>Own bus, kept separate from the power and motor bus</td></tr>
+      </tbody>
+    </table></div>
+    <p class="fine">The board also accepts Hall-effect and TMR sticks that use the standard 3-wire analog interface.</p>
+  </section>
+
+  <section>
+    <h2 id="battery">Battery life</h2>
+    <p>Every setup below is active play: sticks and triggers read continuously, buttons pressed, the touchpad on, and the radio sending every report. HD rumble, the adaptive triggers and the lights are then added at the levels defined here.</p>
+    <div class="defs">
+      <div class="tablewrap"><table class="deft">
+        <thead><tr><th>Usage level</th><th>Strength</th><th>Pattern</th><th>HD rumble, both actuators</th><th>Adaptive triggers, both motors</th></tr></thead>
+        <tbody>
+          <tr><th>Light</th><td>33% of maximum current</td><td>On for 25% of each hour (15 min)</td><td class="num">~15–25 mA</td><td class="num">~45–70 mA</td></tr>
+          <tr><th>Medium</th><td>66% of maximum current</td><td>On for 25% of each hour (15 min)</td><td class="num">~60–100 mA</td><td class="num">~90–140 mA</td></tr>
+          <tr><th>Heavy</th><td>100%, Thirst's maximum output</td><td>On for 25% of each hour (15 min)</td><td class="num">~140–225 mA</td><td class="num">~135–210 mA</td></tr>
+          <tr><th>Constant</th><td>100%, Thirst's maximum output</td><td>The whole hour, never off</td><td class="num">~555–900 mA</td><td class="num">~545–825 mA</td></tr>
+        </tbody>
+      </table></div>
+      <div class="tablewrap"><table class="deft">
+        <thead><tr><th>Light</th><th>Off</th><th>Low (25%)</th><th>Medium (50%)</th><th>High (100%)</th></tr></thead>
+        <tbody>
+          <tr><th>RGB status light, one colour</th><td class="num">0 mA</td><td class="num">~2 mA</td><td class="num">~4 mA</td><td class="num">~8.5 mA</td></tr>
+          <tr><th>Mic mute light</th><td class="num">0 mA</td><td class="num">~1 mA</td><td class="num">~2 mA</td><td class="num">~3.5 mA</td></tr>
+          <tr><th>Touchpad player LEDs, all 3 segments</th><td class="num">0 mA</td><td class="num">~5 mA</td><td class="num">~10.5 mA</td><td class="num">~21 mA</td></tr>
+        </tbody>
+      </table></div>
+    </div>
+    <p class="fine">The rumble and trigger columns are the average current each feature draws from the battery at that level, on top of everything else. 100% is the most Thirst can deliver. Each rumble actuator then draws about 280–450 mA from the battery, with both together capped by the battery's ~0.9 A limit; each trigger motor draws about 270–410 mA, set by the board's 0.4 A per-motor current limit. The rumble amplifiers also draw about 5 mA whenever rumble is enabled. Rumble power rises with the square of its current, so 33% strength uses about 11% of full power; trigger current rises in step with force. A typical shooter such as Call of Duty falls between light and medium. Rumble and triggers are never at constant 100% together: firmware limits rumble while the trigger motors are pushing, to stay inside the battery's current limit.</p>
+    <div class="chart" id="batchart">
+      <div class="legend" aria-hidden="true">
+        <span><i class="sw s1"></i>Dongle · carbon sticks</span>
+        <span><i class="sw s3"></i>Dongle · TMR sticks</span>
+        <span><i class="sw s2"></i>Bluetooth · carbon sticks</span>
+        <span><i class="sw s4"></i>Bluetooth · TMR sticks</span>
+        <span><i class="sw s1"></i><i class="sw s1 off"></i>Solid: RGB status light on medium · whole bar: all lights off</span>
+      </div>
+      <div class="groups" role="list">
+        <div class="cgroup">
+        <div class="gh">Buttons, sticks, triggers, touchpad and gyro, plus HD rumble and adaptive triggers at the same level</div>
+        <div class="legend glegend" aria-hidden="true"><span><i class="sw s1"></i>Dongle · carbon sticks</span><span><i class="sw s3"></i>Dongle · TMR sticks</span><span><i class="sw s2"></i>Bluetooth · carbon sticks</span><span><i class="sw s4"></i>Bluetooth · TMR sticks</span><span><i class="sw s1"></i><i class="sw s1 off"></i>Solid: RGB status light on medium · whole bar: all lights off</span></div>
+        <div class="grp" role="listitem">
+          <div class="glabel">HD rumble <em>heavy</em> · adaptive triggers <em>heavy</em></div>
+          <div class="brow" tabindex="0" data-tip="Dongle 8 kHz, carbon sticks: ~3.3 h with all lights off, ~3.3 h with the RGB status light on medium"><span class="track"><b class="s1 off" style="width:2.2%"></b><b class="s1" style="width:2.2%"></b></span><span class="val">~3.3 <small>/ 3.3 h</small></span></div>
+          <div class="brow" tabindex="0" data-tip="Dongle 8 kHz, TMR sticks: ~3.3 h with all lights off, ~3.3 h with the RGB status light on medium"><span class="track"><b class="s3 off" style="width:2.2%"></b><b class="s3" style="width:2.2%"></b></span><span class="val">~3.3 <small>/ 3.3 h</small></span></div>
+          <div class="brow" tabindex="0" data-tip="Bluetooth, carbon sticks: ~3.4 h with all lights off, ~3.3 h with the RGB status light on medium"><span class="track"><b class="s2 off" style="width:2.2%"></b><b class="s2" style="width:2.2%"></b></span><span class="val">~3.3 <small>/ 3.4 h</small></span></div>
+          <div class="brow" tabindex="0" data-tip="Bluetooth, TMR sticks: ~3.4 h with all lights off, ~3.3 h with the RGB status light on medium"><span class="track"><b class="s4 off" style="width:2.2%"></b><b class="s4" style="width:2.2%"></b></span><span class="val">~3.3 <small>/ 3.4 h</small></span></div>
+        </div>
+        <div class="grp" role="listitem">
+          <div class="glabel">HD rumble <em>medium</em> · adaptive triggers <em>medium</em></div>
+          <div class="brow" tabindex="0" data-tip="Dongle 8 kHz, carbon sticks: ~5.8 h with all lights off, ~5.7 h with the RGB status light on medium"><span class="track"><b class="s1 off" style="width:3.9%"></b><b class="s1" style="width:3.8%"></b></span><span class="val">~5.7 <small>/ 5.8 h</small></span></div>
+          <div class="brow" tabindex="0" data-tip="Dongle 8 kHz, TMR sticks: ~5.8 h with all lights off, ~5.7 h with the RGB status light on medium"><span class="track"><b class="s3 off" style="width:3.9%"></b><b class="s3" style="width:3.8%"></b></span><span class="val">~5.7 <small>/ 5.8 h</small></span></div>
+          <div class="brow" tabindex="0" data-tip="Bluetooth, carbon sticks: ~6.0 h with all lights off, ~5.9 h with the RGB status light on medium"><span class="track"><b class="s2 off" style="width:4.0%"></b><b class="s2" style="width:3.9%"></b></span><span class="val">~5.9 <small>/ 6.0 h</small></span></div>
+          <div class="brow" tabindex="0" data-tip="Bluetooth, TMR sticks: ~6.0 h with all lights off, ~5.9 h with the RGB status light on medium"><span class="track"><b class="s4 off" style="width:4.0%"></b><b class="s4" style="width:3.9%"></b></span><span class="val">~5.9 <small>/ 6.0 h</small></span></div>
+        </div>
+        <div class="grp" role="listitem">
+          <div class="glabel">HD rumble <em>light</em> · adaptive triggers <em>light</em></div>
+          <div class="brow" tabindex="0" data-tip="Dongle 8 kHz, carbon sticks: ~13 h with all lights off, ~12 h with the RGB status light on medium"><span class="track"><b class="s1 off" style="width:8.6%"></b><b class="s1" style="width:8.3%"></b></span><span class="val">~12 <small>/ 13 h</small></span></div>
+          <div class="brow" tabindex="0" data-tip="Dongle 8 kHz, TMR sticks: ~13 h with all lights off, ~12 h with the RGB status light on medium"><span class="track"><b class="s3 off" style="width:8.6%"></b><b class="s3" style="width:8.2%"></b></span><span class="val">~12 <small>/ 13 h</small></span></div>
+          <div class="brow" tabindex="0" data-tip="Bluetooth, carbon sticks: ~14 h with all lights off, ~13 h with the RGB status light on medium"><span class="track"><b class="s2 off" style="width:9.1%"></b><b class="s2" style="width:8.8%"></b></span><span class="val">~13 <small>/ 14 h</small></span></div>
+          <div class="brow" tabindex="0" data-tip="Bluetooth, TMR sticks: ~14 h with all lights off, ~13 h with the RGB status light on medium"><span class="track"><b class="s4 off" style="width:9.2%"></b><b class="s4" style="width:8.8%"></b></span><span class="val">~13 <small>/ 14 h</small></span></div>
+        </div>
+        </div>
+        <div class="cgroup">
+        <div class="gh">Buttons, sticks, triggers, touchpad and gyro, plus HD rumble · adaptive triggers off</div>
+        <div class="legend glegend" aria-hidden="true"><span><i class="sw s1"></i>Dongle · carbon sticks</span><span><i class="sw s3"></i>Dongle · TMR sticks</span><span><i class="sw s2"></i>Bluetooth · carbon sticks</span><span><i class="sw s4"></i>Bluetooth · TMR sticks</span><span><i class="sw s1"></i><i class="sw s1 off"></i>Solid: RGB status light on medium · whole bar: all lights off</span></div>
+        <div class="grp" role="listitem">
+          <div class="glabel">HD rumble <em>constant</em></div>
+          <div class="brow" tabindex="0" data-tip="Dongle 8 kHz, carbon sticks: ~1.5 h with all lights off, ~1.5 h with the RGB status light on medium"><span class="track"><b class="s1 off" style="width:1.0%"></b><b class="s1" style="width:1.0%"></b></span><span class="val">~1.5 <small>/ 1.5 h</small></span></div>
+          <div class="brow" tabindex="0" data-tip="Dongle 8 kHz, TMR sticks: ~1.5 h with all lights off, ~1.5 h with the RGB status light on medium"><span class="track"><b class="s3 off" style="width:1.0%"></b><b class="s3" style="width:1.0%"></b></span><span class="val">~1.5 <small>/ 1.5 h</small></span></div>
+          <div class="brow" tabindex="0" data-tip="Bluetooth, carbon sticks: ~1.5 h with all lights off, ~1.5 h with the RGB status light on medium"><span class="track"><b class="s2 off" style="width:1.0%"></b><b class="s2" style="width:1.0%"></b></span><span class="val">~1.5 <small>/ 1.5 h</small></span></div>
+          <div class="brow" tabindex="0" data-tip="Bluetooth, TMR sticks: ~1.5 h with all lights off, ~1.5 h with the RGB status light on medium"><span class="track"><b class="s4 off" style="width:1.0%"></b><b class="s4" style="width:1.0%"></b></span><span class="val">~1.5 <small>/ 1.5 h</small></span></div>
+        </div>
+        <div class="grp" role="listitem">
+          <div class="glabel">HD rumble <em>heavy</em></div>
+          <div class="brow" tabindex="0" data-tip="Dongle 8 kHz, carbon sticks: ~5.7 h with all lights off, ~5.6 h with the RGB status light on medium"><span class="track"><b class="s1 off" style="width:3.8%"></b><b class="s1" style="width:3.8%"></b></span><span class="val">~5.6 <small>/ 5.7 h</small></span></div>
+          <div class="brow" tabindex="0" data-tip="Dongle 8 kHz, TMR sticks: ~5.7 h with all lights off, ~5.6 h with the RGB status light on medium"><span class="track"><b class="s3 off" style="width:3.8%"></b><b class="s3" style="width:3.8%"></b></span><span class="val">~5.6 <small>/ 5.7 h</small></span></div>
+          <div class="brow" tabindex="0" data-tip="Bluetooth, carbon sticks: ~5.9 h with all lights off, ~5.8 h with the RGB status light on medium"><span class="track"><b class="s2 off" style="width:3.9%"></b><b class="s2" style="width:3.9%"></b></span><span class="val">~5.8 <small>/ 5.9 h</small></span></div>
+          <div class="brow" tabindex="0" data-tip="Bluetooth, TMR sticks: ~5.9 h with all lights off, ~5.8 h with the RGB status light on medium"><span class="track"><b class="s4 off" style="width:3.9%"></b><b class="s4" style="width:3.9%"></b></span><span class="val">~5.8 <small>/ 5.9 h</small></span></div>
+        </div>
+        <div class="grp" role="listitem">
+          <div class="glabel">HD rumble <em>medium</em></div>
+          <div class="brow" tabindex="0" data-tip="Dongle 8 kHz, carbon sticks: ~12 h with all lights off, ~11 h with the RGB status light on medium"><span class="track"><b class="s1 off" style="width:7.9%"></b><b class="s1" style="width:7.6%"></b></span><span class="val">~11 <small>/ 12 h</small></span></div>
+          <div class="brow" tabindex="0" data-tip="Dongle 8 kHz, TMR sticks: ~12 h with all lights off, ~11 h with the RGB status light on medium"><span class="track"><b class="s3 off" style="width:7.9%"></b><b class="s3" style="width:7.6%"></b></span><span class="val">~11 <small>/ 12 h</small></span></div>
+          <div class="brow" tabindex="0" data-tip="Bluetooth, carbon sticks: ~13 h with all lights off, ~12 h with the RGB status light on medium"><span class="track"><b class="s2 off" style="width:8.4%"></b><b class="s2" style="width:8.1%"></b></span><span class="val">~12 <small>/ 13 h</small></span></div>
+          <div class="brow" tabindex="0" data-tip="Bluetooth, TMR sticks: ~13 h with all lights off, ~12 h with the RGB status light on medium"><span class="track"><b class="s4 off" style="width:8.4%"></b><b class="s4" style="width:8.1%"></b></span><span class="val">~12 <small>/ 13 h</small></span></div>
+        </div>
+        <div class="grp" role="listitem">
+          <div class="glabel">HD rumble <em>light</em></div>
+          <div class="brow" tabindex="0" data-tip="Dongle 8 kHz, carbon sticks: ~31 h with all lights off, ~28 h with the RGB status light on medium"><span class="track"><b class="s1 off" style="width:20.5%"></b><b class="s1" style="width:18.7%"></b></span><span class="val">~28 <small>/ 31 h</small></span></div>
+          <div class="brow" tabindex="0" data-tip="Dongle 8 kHz, TMR sticks: ~31 h with all lights off, ~28 h with the RGB status light on medium"><span class="track"><b class="s3 off" style="width:20.5%"></b><b class="s3" style="width:18.7%"></b></span><span class="val">~28 <small>/ 31 h</small></span></div>
+          <div class="brow" tabindex="0" data-tip="Bluetooth, carbon sticks: ~36 h with all lights off, ~33 h with the RGB status light on medium"><span class="track"><b class="s2 off" style="width:24.1%"></b><b class="s2" style="width:21.7%"></b></span><span class="val">~33 <small>/ 36 h</small></span></div>
+          <div class="brow" tabindex="0" data-tip="Bluetooth, TMR sticks: ~36 h with all lights off, ~33 h with the RGB status light on medium"><span class="track"><b class="s4 off" style="width:24.1%"></b><b class="s4" style="width:21.7%"></b></span><span class="val">~33 <small>/ 36 h</small></span></div>
+        </div>
+        </div>
+        <div class="cgroup">
+        <div class="gh">Buttons, sticks, triggers, touchpad and gyro, plus adaptive triggers · HD rumble off</div>
+        <div class="legend glegend" aria-hidden="true"><span><i class="sw s1"></i>Dongle · carbon sticks</span><span><i class="sw s3"></i>Dongle · TMR sticks</span><span><i class="sw s2"></i>Bluetooth · carbon sticks</span><span><i class="sw s4"></i>Bluetooth · TMR sticks</span><span><i class="sw s1"></i><i class="sw s1 off"></i>Solid: RGB status light on medium · whole bar: all lights off</span></div>
+        <div class="grp" role="listitem">
+          <div class="glabel">Adaptive triggers <em>constant</em></div>
+          <div class="brow" tabindex="0" data-tip="Dongle 8 kHz, carbon sticks: ~1.7 h with all lights off, ~1.7 h with the RGB status light on medium"><span class="track"><b class="s1 off" style="width:1.1%"></b><b class="s1" style="width:1.1%"></b></span><span class="val">~1.7 <small>/ 1.7 h</small></span></div>
+          <div class="brow" tabindex="0" data-tip="Dongle 8 kHz, TMR sticks: ~1.7 h with all lights off, ~1.7 h with the RGB status light on medium"><span class="track"><b class="s3 off" style="width:1.1%"></b><b class="s3" style="width:1.1%"></b></span><span class="val">~1.7 <small>/ 1.7 h</small></span></div>
+          <div class="brow" tabindex="0" data-tip="Bluetooth, carbon sticks: ~1.7 h with all lights off, ~1.7 h with the RGB status light on medium"><span class="track"><b class="s2 off" style="width:1.1%"></b><b class="s2" style="width:1.1%"></b></span><span class="val">~1.7 <small>/ 1.7 h</small></span></div>
+          <div class="brow" tabindex="0" data-tip="Bluetooth, TMR sticks: ~1.7 h with all lights off, ~1.7 h with the RGB status light on medium"><span class="track"><b class="s4 off" style="width:1.1%"></b><b class="s4" style="width:1.1%"></b></span><span class="val">~1.7 <small>/ 1.7 h</small></span></div>
+        </div>
+        <div class="grp" role="listitem">
+          <div class="glabel">Adaptive triggers <em>heavy</em></div>
+          <div class="brow" tabindex="0" data-tip="Dongle 8 kHz, carbon sticks: ~6.3 h with all lights off, ~6.2 h with the RGB status light on medium"><span class="track"><b class="s1 off" style="width:4.2%"></b><b class="s1" style="width:4.1%"></b></span><span class="val">~6.2 <small>/ 6.3 h</small></span></div>
+          <div class="brow" tabindex="0" data-tip="Dongle 8 kHz, TMR sticks: ~6.3 h with all lights off, ~6.2 h with the RGB status light on medium"><span class="track"><b class="s3 off" style="width:4.2%"></b><b class="s3" style="width:4.1%"></b></span><span class="val">~6.2 <small>/ 6.3 h</small></span></div>
+          <div class="brow" tabindex="0" data-tip="Bluetooth, carbon sticks: ~6.5 h with all lights off, ~6.4 h with the RGB status light on medium"><span class="track"><b class="s2 off" style="width:4.3%"></b><b class="s2" style="width:4.3%"></b></span><span class="val">~6.4 <small>/ 6.5 h</small></span></div>
+          <div class="brow" tabindex="0" data-tip="Bluetooth, TMR sticks: ~6.5 h with all lights off, ~6.4 h with the RGB status light on medium"><span class="track"><b class="s4 off" style="width:4.4%"></b><b class="s4" style="width:4.3%"></b></span><span class="val">~6.4 <small>/ 6.5 h</small></span></div>
+        </div>
+        <div class="grp" role="listitem">
+          <div class="glabel">Adaptive triggers <em>medium</em></div>
+          <div class="brow" tabindex="0" data-tip="Dongle 8 kHz, carbon sticks: ~9.3 h with all lights off, ~9.0 h with the RGB status light on medium"><span class="track"><b class="s1 off" style="width:6.2%"></b><b class="s1" style="width:6.0%"></b></span><span class="val">~9.0 <small>/ 9.3 h</small></span></div>
+          <div class="brow" tabindex="0" data-tip="Dongle 8 kHz, TMR sticks: ~9.3 h with all lights off, ~9.0 h with the RGB status light on medium"><span class="track"><b class="s3 off" style="width:6.2%"></b><b class="s3" style="width:6.0%"></b></span><span class="val">~9.0 <small>/ 9.3 h</small></span></div>
+          <div class="brow" tabindex="0" data-tip="Bluetooth, carbon sticks: ~9.7 h with all lights off, ~9.4 h with the RGB status light on medium"><span class="track"><b class="s2 off" style="width:6.4%"></b><b class="s2" style="width:6.3%"></b></span><span class="val">~9.4 <small>/ 9.7 h</small></span></div>
+          <div class="brow" tabindex="0" data-tip="Bluetooth, TMR sticks: ~9.7 h with all lights off, ~9.4 h with the RGB status light on medium"><span class="track"><b class="s4 off" style="width:6.5%"></b><b class="s4" style="width:6.3%"></b></span><span class="val">~9.4 <small>/ 9.7 h</small></span></div>
+        </div>
+        <div class="grp" role="listitem">
+          <div class="glabel">Adaptive triggers <em>light</em></div>
+          <div class="brow" tabindex="0" data-tip="Dongle 8 kHz, carbon sticks: ~17 h with all lights off, ~16 h with the RGB status light on medium"><span class="track"><b class="s1 off" style="width:11.2%"></b><b class="s1" style="width:10.6%"></b></span><span class="val">~16 <small>/ 17 h</small></span></div>
+          <div class="brow" tabindex="0" data-tip="Dongle 8 kHz, TMR sticks: ~17 h with all lights off, ~16 h with the RGB status light on medium"><span class="track"><b class="s3 off" style="width:11.2%"></b><b class="s3" style="width:10.6%"></b></span><span class="val">~16 <small>/ 17 h</small></span></div>
+          <div class="brow" tabindex="0" data-tip="Bluetooth, carbon sticks: ~18 h with all lights off, ~17 h with the RGB status light on medium"><span class="track"><b class="s2 off" style="width:12.1%"></b><b class="s2" style="width:11.5%"></b></span><span class="val">~17 <small>/ 18 h</small></span></div>
+          <div class="brow" tabindex="0" data-tip="Bluetooth, TMR sticks: ~18 h with all lights off, ~17 h with the RGB status light on medium"><span class="track"><b class="s4 off" style="width:12.2%"></b><b class="s4" style="width:11.5%"></b></span><span class="val">~17 <small>/ 18 h</small></span></div>
+        </div>
+        </div>
+        <div class="cgroup">
+        <div class="gh">HD rumble and adaptive triggers off</div>
+        <div class="legend glegend" aria-hidden="true"><span><i class="sw s1"></i>Dongle · carbon sticks</span><span><i class="sw s3"></i>Dongle · TMR sticks</span><span><i class="sw s2"></i>Bluetooth · carbon sticks</span><span><i class="sw s4"></i>Bluetooth · TMR sticks</span><span><i class="sw s1"></i><i class="sw s1 off"></i>Solid: RGB status light on medium · whole bar: all lights off</span></div>
+        <div class="grp" role="listitem">
+          <div class="glabel">Buttons, sticks, triggers, touchpad and gyro</div>
+          <div class="brow" tabindex="0" data-tip="Dongle 8 kHz, carbon sticks: ~81 h with all lights off, ~65 h with the RGB status light on medium"><span class="track"><b class="s1 off" style="width:54.0%"></b><b class="s1" style="width:43.2%"></b></span><span class="val">~65 <small>/ 81 h</small></span></div>
+          <div class="brow" tabindex="0" data-tip="Dongle 8 kHz, TMR sticks: ~82 h with all lights off, ~65 h with the RGB status light on medium"><span class="track"><b class="s3 off" style="width:54.5%"></b><b class="s3" style="width:43.5%"></b></span><span class="val">~65 <small>/ 82 h</small></span></div>
+          <div class="brow" tabindex="0" data-tip="Bluetooth, carbon sticks: ~136 h with all lights off, ~96 h with the RGB status light on medium"><span class="track"><b class="s2 off" style="width:90.9%"></b><b class="s2" style="width:64.0%"></b></span><span class="val">~96 <small>/ 136 h</small></span></div>
+          <div class="brow" tabindex="0" data-tip="Bluetooth, TMR sticks: ~139 h with all lights off, ~97 h with the RGB status light on medium"><span class="track"><b class="s4 off" style="width:92.3%"></b><b class="s4" style="width:64.7%"></b></span><span class="val">~97 <small>/ 139 h</small></span></div>
+        </div>
+        <div class="grp" role="listitem">
+          <div class="glabel">Buttons, sticks, triggers and touchpad <em>(gyro off)</em></div>
+          <div class="brow" tabindex="0" data-tip="Dongle 8 kHz, carbon sticks: ~87 h with all lights off, ~69 h with the RGB status light on medium"><span class="track"><b class="s1 off" style="width:58.0%"></b><b class="s1" style="width:45.7%"></b></span><span class="val">~69 <small>/ 87 h</small></span></div>
+          <div class="brow" tabindex="0" data-tip="Dongle 8 kHz, TMR sticks: ~88 h with all lights off, ~69 h with the RGB status light on medium"><span class="track"><b class="s3 off" style="width:58.6%"></b><b class="s3" style="width:46.1%"></b></span><span class="val">~69 <small>/ 88 h</small></span></div>
+          <div class="brow" tabindex="0" data-tip="Bluetooth, carbon sticks: ~145 h with all lights off, ~100 h with the RGB status light on medium"><span class="track"><b class="s2 off" style="width:96.9%"></b><b class="s2" style="width:66.9%"></b></span><span class="val">~100 <small>/ 145 h</small></span></div>
+          <div class="brow" tabindex="0" data-tip="Bluetooth, TMR sticks: ~148 h with all lights off, ~102 h with the RGB status light on medium"><span class="track"><b class="s4 off" style="width:98.7%"></b><b class="s4" style="width:67.8%"></b></span><span class="val">~102 <small>/ 148 h</small></span></div>
+        </div>
+        </div>
+      </div>
+      <div class="axis" aria-hidden="true"><span>0 h</span><span>50 h</span><span>100 h</span><span>150 h</span></div>
+      <div class="tip" id="battip" hidden></div>
+    </div>
+    <details class="astable"><summary>All figures, carbon sticks, RGB status light at every level</summary>
+    <div class="tablewrap"><table class="bat alltab">
+      <thead>
+        <tr><th rowspan="2">Setup</th><th colspan="4">2.4 GHz dongle · 8 kHz, RGB status light</th><th colspan="4">Bluetooth, RGB status light</th></tr>
+        <tr><th>Off</th><th>Low</th><th>Medium</th><th>High</th><th>Off</th><th>Low</th><th>Medium</th><th>High</th></tr>
+      </thead>
+      <tbody>
+        <tr class="tgh"><th colspan="9">Buttons, sticks, triggers, touchpad and gyro, plus HD rumble and adaptive triggers at the same level</th></tr>
+        <tr><th>HD rumble <em>heavy</em> · adaptive triggers <em>heavy</em></th><td class="num">~3.3 h</td><td class="num">~3.3 h</td><td class="num">~3.3 h</td><td class="num">~3.2 h</td><td class="num">~3.4 h</td><td class="num">~3.3 h</td><td class="num">~3.3 h</td><td class="num">~3.3 h</td></tr>
+        <tr><th>HD rumble <em>medium</em> · adaptive triggers <em>medium</em></th><td class="num">~5.8 h</td><td class="num">~5.8 h</td><td class="num">~5.7 h</td><td class="num">~5.6 h</td><td class="num">~6.0 h</td><td class="num">~6.0 h</td><td class="num">~5.9 h</td><td class="num">~5.8 h</td></tr>
+        <tr><th>HD rumble <em>light</em> · adaptive triggers <em>light</em></th><td class="num">~13 h</td><td class="num">~13 h</td><td class="num">~12 h</td><td class="num">~12 h</td><td class="num">~14 h</td><td class="num">~13 h</td><td class="num">~13 h</td><td class="num">~13 h</td></tr>
+        <tr class="tgh"><th colspan="9">Buttons, sticks, triggers, touchpad and gyro, plus HD rumble · adaptive triggers off</th></tr>
+        <tr><th>HD rumble <em>constant</em></th><td class="num">~1.5 h</td><td class="num">~1.5 h</td><td class="num">~1.5 h</td><td class="num">~1.5 h</td><td class="num">~1.5 h</td><td class="num">~1.5 h</td><td class="num">~1.5 h</td><td class="num">~1.5 h</td></tr>
+        <tr><th>HD rumble <em>heavy</em></th><td class="num">~5.7 h</td><td class="num">~5.7 h</td><td class="num">~5.6 h</td><td class="num">~5.5 h</td><td class="num">~5.9 h</td><td class="num">~5.9 h</td><td class="num">~5.8 h</td><td class="num">~5.7 h</td></tr>
+        <tr><th>HD rumble <em>medium</em></th><td class="num">~12 h</td><td class="num">~12 h</td><td class="num">~11 h</td><td class="num">~11 h</td><td class="num">~13 h</td><td class="num">~12 h</td><td class="num">~12 h</td><td class="num">~12 h</td></tr>
+        <tr><th>HD rumble <em>light</em></th><td class="num">~31 h</td><td class="num">~29 h</td><td class="num">~28 h</td><td class="num">~26 h</td><td class="num">~36 h</td><td class="num">~34 h</td><td class="num">~33 h</td><td class="num">~30 h</td></tr>
+        <tr class="tgh"><th colspan="9">Buttons, sticks, triggers, touchpad and gyro, plus adaptive triggers · HD rumble off</th></tr>
+        <tr><th>Adaptive triggers <em>constant</em></th><td class="num">~1.7 h</td><td class="num">~1.7 h</td><td class="num">~1.7 h</td><td class="num">~1.7 h</td><td class="num">~1.7 h</td><td class="num">~1.7 h</td><td class="num">~1.7 h</td><td class="num">~1.7 h</td></tr>
+        <tr><th>Adaptive triggers <em>heavy</em></th><td class="num">~6.3 h</td><td class="num">~6.3 h</td><td class="num">~6.2 h</td><td class="num">~6.1 h</td><td class="num">~6.5 h</td><td class="num">~6.5 h</td><td class="num">~6.4 h</td><td class="num">~6.3 h</td></tr>
+        <tr><th>Adaptive triggers <em>medium</em></th><td class="num">~9.3 h</td><td class="num">~9.1 h</td><td class="num">~9.0 h</td><td class="num">~8.8 h</td><td class="num">~9.7 h</td><td class="num">~9.5 h</td><td class="num">~9.4 h</td><td class="num">~9.1 h</td></tr>
+        <tr><th>Adaptive triggers <em>light</em></th><td class="num">~17 h</td><td class="num">~16 h</td><td class="num">~16 h</td><td class="num">~15 h</td><td class="num">~18 h</td><td class="num">~18 h</td><td class="num">~17 h</td><td class="num">~16 h</td></tr>
+        <tr class="tgh"><th colspan="9">HD rumble and adaptive triggers off</th></tr>
+        <tr><th>Buttons, sticks, triggers, touchpad and gyro</th><td class="num">~81 h</td><td class="num">~72 h</td><td class="num">~65 h</td><td class="num">~54 h</td><td class="num">~136 h</td><td class="num">~113 h</td><td class="num">~96 h</td><td class="num">~74 h</td></tr>
+        <tr><th>Buttons, sticks, triggers and touchpad <em>(gyro off)</em></th><td class="num">~87 h</td><td class="num">~77 h</td><td class="num">~69 h</td><td class="num">~56 h</td><td class="num">~145 h</td><td class="num">~119 h</td><td class="num">~100 h</td><td class="num">~76 h</td></tr>
+      </tbody>
+    </table></div>
+    </details>
+    <p class="fine">Every battery figure on this sheet comes from an electrical simulation of the board: 20,000 runs per figure, each using the published current draw of every component, varied across its specified range, together with the usage levels above, for the stock-size 1,560 mAh battery. The figure shown is the conservative result: 9 in 10 runs lasted at least this long, and the typical (median) run lasts longer. All figures are to be confirmed by measurement on prototype hardware. Carbon sticks are the stock carbon-film potentiometer sticks; TMR sticks are HallPi drop-in TMR sticks for the same 3-pin footprint, with four TMR sensors drawing about 0.25 mA each. On this board the two draw almost the same, so their battery life matches to within a few per cent; the table is for carbon sticks. The chart and the table use the RGB status light only, on one colour, with the mic mute light and touchpad player LEDs off; white uses up to three times as much. Adding the other two lights is shown further down. With rumble and triggers off, the lights become the biggest single load. A full charge takes about 2.5 hours, over USB-C or the dock input.</p>
+    <script>
+    (function () {
+      var chart = document.getElementById('batchart'), tip = document.getElementById('battip');
+      if (!chart || !tip) return;
+      function show(el) {
+        tip.textContent = el.getAttribute('data-tip');
+        tip.hidden = false;
+        var c = chart.getBoundingClientRect(), r = el.getBoundingClientRect();
+        var x = Math.min(Math.max(r.left - c.left + 8, 0), c.width - tip.offsetWidth);
+        tip.style.left = x + 'px';
+        tip.style.top = (r.top - c.top - tip.offsetHeight - 6) + 'px';
+      }
+      function hide() { tip.hidden = true; }
+      chart.querySelectorAll('.brow').forEach(function (el) {
+        el.addEventListener('mouseenter', function () { show(el); });
+        el.addEventListener('focus', function () { show(el); });
+        el.addEventListener('mouseleave', hide);
+        el.addEventListener('blur', hide);
+      });
+    })();
+    </script>
+  </section>
+
+  <section id="calc">
+    <h2 id="calculator">Battery calculator</h2>
+    <p>Pick any combination. The page runs the same electrical simulation as the figures above, live, with 20,000 runs for each result. It shows the conservative figure (9 in 10 runs last at least this long) with the typical (median) figure beside it.</p>
+    <div class="calc">
+      <div class="controls">
+        <label for="c-gyro">Gyro<select id="c-gyro"><option value="on">On</option><option value="off">Off</option></select></label>
+        <label for="c-sticks">Sticks<select id="c-sticks"><option value="pots">Carbon film (stock)</option><option value="tmr">HallPi TMR</option></select></label>
+        <label for="c-rumble">HD rumble<select id="c-rumble"><option value="off">Off</option><option value="light">Light</option><option value="medium" selected>Medium</option><option value="heavy">Heavy</option><option value="constant">Constant</option></select></label>
+        <label for="c-trig">Adaptive triggers<select id="c-trig"><option value="off">Off</option><option value="light" selected>Light</option><option value="medium">Medium</option><option value="heavy">Heavy</option><option value="constant">Constant</option></select></label>
+        <label for="c-rgb">RGB status light<select id="c-rgb"><option value="off">Off</option><option value="low" selected>Low</option><option value="medium">Medium</option><option value="high">High</option></select></label>
+        <label for="c-mic">Mic mute light<select id="c-mic"><option value="off" selected>Off</option><option value="low">Low</option><option value="medium">Medium</option><option value="high">High</option></select></label>
+        <label for="c-pad">Touchpad player LEDs<select id="c-pad"><option value="off">Off</option><option value="low" selected>Low</option><option value="medium">Medium</option><option value="high">High</option></select></label>
+      </div>
+      <div class="results">
+        <div class="res"><span class="rl">2.4 GHz dongle · 8 kHz</span><b id="r-d">–</b><span class="rs" id="r-d2"></span></div>
+        <div class="res"><span class="rl">Bluetooth</span><b id="r-b">–</b><span class="rs" id="r-b2"></span></div>
+      </div>
+      <div class="split" aria-label="Where the power goes, dongle">
+        <div class="splitbar" id="splitbar"></div>
+        <div class="splitkey" id="splitkey"></div>
+      </div>
+      <p class="fine" id="c-note" hidden>Rumble and the adaptive triggers can't both run at constant 100%: firmware limits rumble while the trigger motors are pushing. This estimate ignores that limit, so real battery life would be a little longer.</p>
+    </div>
+    <h3 id="light-cost">What each light costs</h3>
+    <p class="fine">Gyro on, no rumble or adaptive triggers, every other light off. Hours are the conservative result of 20,000 simulated runs per figure.</p>
+    <div class="tablewrap"><table id="lightcost">
+      <thead><tr><th>Light</th><th>Level</th><th>Current</th><th>Dongle · 8 kHz</th><th>Bluetooth</th></tr></thead>
+      <tbody></tbody>
+    </table></div>
+    <h3 id="light-combos">Adding the touchpad LEDs and mic mute light</h3>
+    <p class="fine">The battery figures above use the RGB status light only. These grids add the touchpad player LEDs and the mic mute light on top: all 64 combinations of the three lights. Each grid is one mic mute light level; RGB status light runs across, touchpad player LEDs run down. Hours are the conservative result of 20,000 simulated runs per cell, and the grids follow the gyro, rumble and trigger settings in the calculator above.</p>
+    <div class="hmbar">
+      <div class="seg" role="group" aria-label="Connection">
+        <button type="button" id="hm-d" aria-pressed="true">2.4 GHz dongle · 8 kHz</button>
+        <button type="button" id="hm-b" aria-pressed="false">Bluetooth</button>
+      </div>
+      <span class="hmscale" aria-hidden="true"><span id="hm-min"></span><i></i><span id="hm-max"></span></span>
+    </div>
+    <div class="hmgrid" id="heatmap"></div>
+    <h3 id="setup-grids">Touchpad LEDs and mic light in every setup</h3>
+    <p class="fine">The battery chart above uses the RGB status light on medium. These grids keep it on medium and add the touchpad player LEDs (down) and the mic mute light (across) for every setup in the chart. Each grid is shaded on its own scale. Hours are the conservative result of 20,000 simulated runs per cell; the printed sheet shows the 2.4 GHz dongle at 8 kHz.</p>
+    <div class="hmbar">
+      <div class="seg" role="group" aria-label="Connection">
+        <button type="button" id="sg-d" aria-pressed="true">2.4 GHz dongle · 8 kHz</button>
+        <button type="button" id="sg-b" aria-pressed="false">Bluetooth</button>
+      </div>
+    </div>
+    <div class="hmgrid sgrid" id="setupgrids"></div>
+  </section>
+
+  <section>
+    <h2 id="roadmap">Roadmap</h2>
+    <p>The order things happen in, from pre-orders to production.</p>
+    <ol class="roadmap">
+      <li><b>Pre-orders open</b> <span class="tag">Very soon, likely week 1–2 of November</span><p>Under 20 boards. A 50% deposit of the $350 maximum price reserves a board.</p></li>
+      <li><b>Test board order</b><p>The initial test boards are ordered. Initial runs take about 3–4 weeks, plus shipping.</p></li>
+      <li><b>Design validation and basic firmware</b><p>The physical design is validated on real hardware, and a basic firmware build brings up comms with the dongle.</p></li>
+      <li><b>Latency testing</b><p>Real input latency is measured with a high-speed, firmware-linked test device.</p></li>
+      <li><b>First consumer prototypes ordered</b><p>Once testing shows the boards are stable, the first round of consumer prototypes is ordered. Remaining balances are calculated from the number of boards on order, and the price per board drops as milestones are met.</p></li>
+      <li><b>Production</b><p>Firmware work continues while boards are in production. Later runs take about 2–4 weeks each, plus shipping.</p></li>
+    </ol>
+  </section>
+
+  <section>
+    <h2 id="features">Features</h2>
+    <div class="features">
+      <div class="group"><h3>Controls</h3><ul>
+        <li><b>Full standard layout:</b> D-pad, four face buttons, L1/R1, analog L2/R2 with digital end stops, L3/R3, Create, Options, Home, Mute and touchpad click</li>
+        <li><b>8 extra buttons</b> for back paddles or anywhere else you want them, all remappable</li>
+        <li><b>Encoder input</b> for a scroll wheel or dial. It is decoded in hardware, so fast spins never drop steps</li>
+        <li><b>Frame Sniping:</b> the controller tracks your PC's polling in real time and adapts to it. Every input is sampled at the last useful moment, so each report reaches the PC as fresh as it can be</li>
+        <li><b>Zero-delay debounce:</b> a press is reported on its first edge, and contact bounce afterwards is ignored</li>
+        <li><b>Home button wakes</b> the controller from deep sleep. There is also a rear pinhole reset</li>
+      </ul></div>
+      <div class="group"><h3>Feedback</h3><ul>
+        <li><b>HD rumble:</b> two voice-coil actuators driven by digital amplifiers. On PC, haptics arrive as audio channels, the same way the original controller does it</li>
+        <li><b>Adaptive triggers</b> on both sides: motor-driven resistance with about 60 force steps. Trigger position is measured, so effects like weapon kick and tension zones respond to where your finger actually is</li>
+        <li>The trigger motors are current-limited and report faults, so a jammed trigger shuts off safely</li>
+      </ul></div>
+      <div class="group"><h3>Touchpad and lighting</h3><ul>
+        <li><b>Touchpad:</b> full multi-touch with click, using the original touchpad</li>
+        <li><b>Touchscreen-ready:</b> the touchpad connector can also run a small touch display in place of the touchpad. The board detects which one is fitted at power-up</li>
+        <li><b>Player LEDs</b> on the touchpad, three segments, each dimmable separately</li>
+        <li><b>Full-colour RGB status light</b> and a dimmable mic/mute light</li>
+      </ul></div>
+      <div class="group"><h3>Power and charging</h3><ul>
+        <li>Fits the <b>stock battery</b>, with temperature-monitored smart charging</li>
+        <li><b>Built-in fuel gauge</b> for an accurate battery percentage</li>
+        <li><b>Wireless-charging ready:</b> a protected 5 V input for charging dock contacts or a wireless charging receiver. It is reverse-blocked and surge-protected</li>
+        <li><b>Storage mode</b> cuts the drain to almost nothing; press Home to wake it</li>
+      </ul></div>
+      <div class="group"><h3>Companion app <span class="tag">In development</span></h3><ul>
+        <li><b>PC and phone app</b> for button remapping, including the 8 extras</li>
+        <li><b>Stick curves and deadzones;</b> trigger curves and click points</li>
+        <li><b>Report rate</b> selectable from 125 Hz to 8,000 Hz</li>
+        <li>Adaptive trigger profiles, rumble strength, gyro sensitivity and lighting</li>
+        <li><b>Always in sync:</b> change a setting from the PC or the phone and the other updates to match. The controller holds the settings</li>
+        <li><b>Built-in latency self-test</b> that checks the controller's own timing</li>
+        <li><b>Cable and port test:</b> checks your USB cable and port for a stable link and their effective speed at 8,000 Hz, with a simple pass, marginal or fail result and details for those who want them</li>
+        <li>Profiles stored on the controller. Firmware updates over USB</li>
+      </ul></div>
+      <div class="group"><h3>Build</h3><ul>
+        <li>Drop-in board for the DualSense shell. Stick, button and connector positions are kept</li>
+        <li><b>Expansion boards:</b> the trigger motors, haptics, shoulder buttons and extra buttons connect through removable expansion boards. More expansion boards are planned</li>
+        <li><b>USB-C</b> with through-hole anchoring for cable-yank strength, and ESD protection on the data lines</li>
+        <li>4-layer board with an impedance-controlled USB pair, for a clean High-Speed link</li>
+        <li>Antenna kept clear of copper at the board edge, for range in the stock shell</li>
+      </ul></div>
+      <div class="group"><h3>Planned <span class="tag">Future firmware</span></h3><ul>
+        <li><b>Controller as dongle:</b> plug one Thirst into your PC and it acts as the wireless receiver for a second one, at full 8 kHz</li>
+      </ul></div>
+    </div>
+  </section>
+
+  <div class="not">
+    <h2 id="not-included">Not in this revision</h2>
+    <ul>
+      <li>3.5 mm headset jack, built-in speaker and microphone</li>
+      <li>PS5 console play. This revision is PC-first; console support would need a future dongle</li>
+    </ul>
+  </div>
+</div>
+<script>
+(function (root) {
+  function rng(seed) {
+    return function () {
+      seed |= 0; seed = (seed + 0x6D2B79F5) | 0;
+      var t = Math.imul(seed ^ (seed >>> 15), 1 | seed);
+      t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    };
+  }
+  var LEVELS = { off: null, light: [0.33, 0.25], medium: [0.66, 0.25], heavy: [1.0, 0.25], constant: [1.0, 1.0] };
+  var BRIGHT = { off: 0, low: 0.25, medium: 0.5, high: 1.0 };
+
+  function sample(r, o) {
+    var U = function (a, b) { return a + (b - a) * r(); };
+    var vbat = U(3.65, 3.75), radio, cpu, adc, i33, p, s;
+    if (o.mode === 'dongle') {
+      var tx = o.gyro ? 832 : 736;
+      radio = (tx * U(5.0, 7.0) + 112 * U(3.3, 4.0) + (1000 - tx - 112) * 0.6) / 1000;
+      cpu = U(2.2, 3.5) * U(0.20, 0.40) + U(0.3, 0.6);
+      adc = U(0.25, 0.40) + U(0.45, 0.50) * U(0.75, 1.75);
+    } else {
+      radio = U(66, 133) * U(0.30, 0.45) * U(4.5, 6.0) / 1000;
+      cpu = U(0.15, 0.40) + U(0.05, 0.15);
+      adc = U(0.25, 0.40);
+    }
+    var sticks = o.sticks === 'tmr' ? 4 * U(0.24, 0.26) * U(1.0, 1.1) : 4 * 3.0 / U(5e3, 20e3) * 1000;
+    var analog = 4 * U(0.538, 0.65) + 2 * U(0.538, 0.65) + U(0.017, 0.025) + U(0.13, 0.20)
+      + sticks + 2 * 3.0 / (6.8e3 + U(0, 6.8e3)) * 1000 + adc;
+    var other = (o.gyro ? U(0.55, 0.70) : 0.003) + U(0.3, 3.0) + U(1, 2) * 3.3 / 13e3 * 1000;
+    var lights = BRIGHT[o.rgb] * U(8.0, 9.0) + BRIGHT[o.mic] * U(2.0, 5.0) + BRIGHT[o.pad] * 3 * U(4.0, 10.0);
+    i33 = radio + cpu + analog + other + lights;
+    p = 3.3 * i33 / U(0.85, 0.92);
+    var pr = 0, pt = 0;
+    if (LEVELS[o.rumble]) {
+      s = LEVELS[o.rumble];
+      var res = U(4.0, 8.0), pmax = Math.min(2 * (vbat * vbat / (2 * res)) / U(0.85, 0.90), 0.9 * vbat);
+      pr = 2 * U(2.4, 3.0) * vbat + s[1] * s[0] * s[0] * pmax * 1000;
+    }
+    if (LEVELS[o.trig]) {
+      s = LEVELS[o.trig];
+      pt = 2 * s[1] * s[0] * U(0.32, 0.48) * U(0.70, 1.00) * vbat * 1000;
+    }
+    var wh = U(1500, 1560) / 1000 * U(0.90, 0.95) * U(3.65, 3.75);
+    return { h: wh * 1000 / (p + pr + pt), base: 3.3 * (i33 - lights), lights: 3.3 * lights, pr: pr, pt: pt };
+  }
+
+  function run(o, n, seed) {
+    var r = rng(seed || 12345), hs = [], acc = { base: 0, lights: 0, pr: 0, pt: 0 };
+    for (var i = 0; i < n; i++) {
+      var x = sample(r, o);
+      hs.push(x.h); acc.base += x.base; acc.lights += x.lights; acc.pr += x.pr; acc.pt += x.pt;
+    }
+    hs.sort(function (a, b) { return a - b; });
+    return { p10: hs[Math.floor(n * 0.1)], med: hs[Math.floor(n * 0.5)], p90: hs[Math.floor(n * 0.9)],
+             mw: { base: acc.base / n, lights: acc.lights / n, rumble: acc.pr / n, trig: acc.pt / n } };
+  }
+  root.ThirstBattery = { run: run };
+  if (typeof module !== 'undefined') module.exports = root.ThirstBattery;
+})(typeof window !== 'undefined' ? window : globalThis);
+
+(function () {
+  var M = window.ThirstBattery, $ = function (id) { return document.getElementById(id); };
+  if (!M || !$('calc')) return;
+  var ids = ['c-gyro', 'c-sticks', 'c-rumble', 'c-trig', 'c-rgb', 'c-mic', 'c-pad'];
+  function fmt(h) { return h < 10 ? h.toFixed(1) : String(Math.round(h)); }
+  function opts(mode) {
+    return { mode: mode, gyro: $('c-gyro').value === 'on', sticks: $('c-sticks').value, rumble: $('c-rumble').value, trig: $('c-trig').value,
+             rgb: $('c-rgb').value, mic: $('c-mic').value, pad: $('c-pad').value };
+  }
+  function update() {
+    var d = M.run(opts('dongle'), 20000, 101), b = M.run(opts('ble'), 20000, 202);
+    $('r-d').textContent = '~' + fmt(d.p10) + ' h'; $('r-d2').textContent = 'typical ~' + fmt(d.med) + ' h';
+    $('r-b').textContent = '~' + fmt(b.p10) + ' h'; $('r-b2').textContent = 'typical ~' + fmt(b.med) + ' h';
+    var parts = [['Controller (radio, sensors, touchpad)', d.mw.base, 'k1'], ['Lights', d.mw.lights, 'k4'],
+                 ['HD rumble', d.mw.rumble, 'k2'], ['Adaptive triggers', d.mw.trig, 'k3']];
+    var tot = parts.reduce(function (a, p) { return a + p[1]; }, 0), bar = '', key = '';
+    parts.forEach(function (p) {
+      if (p[1] <= 0) return;
+      bar += '<i class="' + p[2] + '" style="flex:' + p[1].toFixed(2) + '" title="' + p[0] + '"></i>';
+      key += '<span><i class="sw ' + p[2] + '"></i>' + p[0] + ' ' + Math.round(100 * p[1] / tot) + '%</span>';
+    });
+    $('splitbar').innerHTML = bar;
+    $('splitkey').innerHTML = key + '<span>Average draw ~' + Math.round(tot) + ' mW (dongle)</span>';
+    $('c-note').hidden = !($('c-rumble').value === 'constant' && $('c-trig').value === 'constant');
+  }
+  ids.forEach(function (id) { $(id).addEventListener('change', update); });
+  update();
+  var rows = '', LIGHTS = [['RGB status light', 'rgb', [2.1, 4.3, 8.5]], ['Mic mute light', 'mic', [0.9, 1.75, 3.5]],
+                           ['Touchpad player LEDs', 'pad', [5.3, 10.5, 21]]];
+  var base = { gyro: true, rumble: 'off', trig: 'off', rgb: 'off', mic: 'off', pad: 'off' };
+  function cost(mode, key, lv) { var o = Object.assign({ mode: mode }, base); if (key) o[key] = lv; return M.run(o, 20000, 303).p10; }
+  rows += '<tr><th>All lights off</th><td>–</td><td class="num">0 mA</td><td class="num">~' + fmt(cost('dongle')) + ' h</td><td class="num">~' + fmt(cost('ble')) + ' h</td></tr>';
+  LIGHTS.forEach(function (L) {
+    ['low', 'medium', 'high'].forEach(function (lv, i) {
+      rows += '<tr><th>' + (i === 0 ? L[0] : '') + '</th><td>' + lv.charAt(0).toUpperCase() + lv.slice(1) + '</td><td class="num">~' + L[2][i] +
+        ' mA</td><td class="num">~' + fmt(cost('dongle', L[1], lv)) + ' h</td><td class="num">~' + fmt(cost('ble', L[1], lv)) + ' h</td></tr>';
+    });
+  });
+  document.querySelector('#lightcost tbody').innerHTML = rows;
+})();
+</script>
+<script>
+(function () {
+  var M = window.ThirstBattery, $ = function (id) { return document.getElementById(id); };
+  if (!M || !$('heatmap')) return;
+  var mode = 'dongle', LV = ['off', 'low', 'medium', 'high'], NM = ['Off', 'Low', 'Med', 'High'];
+  function fmt(h) { return h < 10 ? h.toFixed(1) : String(Math.round(h)); }
+  function render() {
+    var base = { mode: mode, gyro: $('c-gyro').value === 'on', sticks: $('c-sticks').value, rumble: $('c-rumble').value, trig: $('c-trig').value };
+    var hrs = {}, lo = Infinity, hi = 0;
+    LV.forEach(function (mic) { LV.forEach(function (pad) { LV.forEach(function (rgb) {
+      var o = Object.assign({ mic: mic, pad: pad, rgb: rgb }, base);
+      var h = M.run(o, 20000, 404).p10;
+      hrs[mic + pad + rgb] = h; lo = Math.min(lo, h); hi = Math.max(hi, h);
+    }); }); });
+    var out = '';
+    LV.forEach(function (mic, mi) {
+      out += '<div class="hmp"><h4>Mic mute light: ' + NM[mi] + '</h4><div class="hmt" role="table" aria-label="Mic light ' + NM[mi] + '">';
+      out += '<div class="corner" role="columnheader">Pad ↓ RGB →</div>';
+      NM.forEach(function (n) { out += '<div class="hd" role="columnheader">' + n + '</div>'; });
+      LV.forEach(function (pad, pi) {
+        out += '<div class="rh" role="rowheader">' + NM[pi] + '</div>';
+        LV.forEach(function (rgb, ri) {
+          var h = hrs[mic + pad + rgb], t = hi > lo ? (h - lo) / (hi - lo) : 1, pct = Math.round(12 + 88 * t);
+          var ink = pct > 55 ? 'var(--panel)' : 'var(--ink)';
+          out += '<div class="c" role="cell" style="background:color-mix(in oklab, var(--s1) ' + pct + '%, var(--panel));color:' + ink +
+            '" title="Mic ' + NM[mi] + ', touchpad LEDs ' + NM[pi] + ', RGB ' + NM[ri] + ': ~' + fmt(h) + ' h">' + fmt(h) + '</div>';
+        });
+      });
+      out += '</div></div>';
+    });
+    $('heatmap').innerHTML = out;
+    $('hm-min').textContent = '~' + fmt(lo) + ' h'; $('hm-max').textContent = '~' + fmt(hi) + ' h';
+  }
+  function setMode(m) { mode = m; $('hm-d').setAttribute('aria-pressed', m === 'dongle'); $('hm-b').setAttribute('aria-pressed', m === 'ble'); render(); }
+  $('hm-d').addEventListener('click', function () { setMode('dongle'); });
+  $('hm-b').addEventListener('click', function () { setMode('ble'); });
+  ['c-gyro', 'c-sticks', 'c-rumble', 'c-trig'].forEach(function (id) { $(id).addEventListener('change', render); });
+  render();
+})();
+</script>
+<script>
+(function () {
+  var M = window.ThirstBattery, $ = function (id) { return document.getElementById(id); };
+  if (!M || !$('setupgrids')) return;
+  var LV = ['off', 'low', 'medium', 'high'], NM = ['Off', 'Low', 'Med', 'High'], mode = 'dongle';
+  var SETUPS = [
+    ['HD rumble heavy · adaptive triggers heavy', true, 'heavy', 'heavy'],
+    ['HD rumble medium · adaptive triggers medium', true, 'medium', 'medium'],
+    ['HD rumble light · adaptive triggers light', true, 'light', 'light'],
+    ['HD rumble constant', true, 'constant', 'off'],
+    ['HD rumble heavy', true, 'heavy', 'off'],
+    ['HD rumble medium', true, 'medium', 'off'],
+    ['HD rumble light', true, 'light', 'off'],
+    ['Adaptive triggers constant', true, 'off', 'constant'],
+    ['Adaptive triggers heavy', true, 'off', 'heavy'],
+    ['Adaptive triggers medium', true, 'off', 'medium'],
+    ['Adaptive triggers light', true, 'off', 'light'],
+    ['No rumble or adaptive triggers, gyro on', true, 'off', 'off'],
+    ['No rumble or adaptive triggers, gyro off', false, 'off', 'off']];
+  function fmt(h) { return h < 10 ? h.toFixed(1) : String(Math.round(h)); }
+  var job = 0;
+  function render() {
+    var my = ++job, si = 0, box = $('setupgrids');
+    box.innerHTML = '';
+    (function next() {
+      if (my !== job || si >= SETUPS.length) return;
+      box.insertAdjacentHTML('beforeend', grid(SETUPS[si], si));
+      si++;
+      setTimeout(next, 0);
+    })();
+  }
+  function grid(S, si) {
+    var out = '';
+    {
+      var hrs = {}, lo = Infinity, hi = 0;
+      LV.forEach(function (pad) { LV.forEach(function (mic) {
+        var h = M.run({ mode: mode, gyro: S[1], rumble: S[2], trig: S[3], rgb: 'medium', pad: pad, mic: mic }, 20000, 500 + si).p10;
+        hrs[pad + mic] = h; lo = Math.min(lo, h); hi = Math.max(hi, h);
+      }); });
+      out += '<div class="hmp"><h4>' + S[0] + '</h4><span class="rng">~' + fmt(lo) + ' to ~' + fmt(hi) + ' h</span>' +
+             '<div class="hmt" role="table" aria-label="' + S[0] + '"><div class="corner" role="columnheader">Pad ↓ Mic →</div>';
+      NM.forEach(function (n) { out += '<div class="hd" role="columnheader">' + n + '</div>'; });
+      LV.forEach(function (pad, pi) {
+        out += '<div class="rh" role="rowheader">' + NM[pi] + '</div>';
+        LV.forEach(function (mic, mi) {
+          var h = hrs[pad + mic], t = hi > lo ? (h - lo) / (hi - lo) : 1, pct = Math.round(12 + 88 * t);
+          out += '<div class="c" role="cell" style="background:color-mix(in oklab, var(--s1) ' + pct + '%, var(--panel));color:' +
+            (pct > 55 ? 'var(--panel)' : 'var(--ink)') + '" title="' + S[0] + ', touchpad LEDs ' + NM[pi] + ', mic light ' + NM[mi] +
+            ', RGB medium: ~' + fmt(h) + ' h">' + fmt(h) + '</div>';
+        });
+      });
+      out += '</div></div>';
+    }
+    return out;
+  }
+  function setMode(m) { mode = m; $('sg-d').setAttribute('aria-pressed', m === 'dongle'); $('sg-b').setAttribute('aria-pressed', m === 'ble'); render(); }
+  $('sg-d').addEventListener('click', function () { setMode('dongle'); });
+  $('sg-b').addEventListener('click', function () { setMode('ble'); });
+  render();
+})();
+</script>
+
+</html>
